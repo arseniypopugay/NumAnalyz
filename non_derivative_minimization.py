@@ -48,46 +48,59 @@ def golden_ratio(function, a, b, epsilon, print_data=False):
     return iterations, (a + b) / 2
 
 
-def fibonacci(function, a, b, iteration_limit, print_data=False):
+def fibonacci(function, a, b, iteration_limit, epsilon,  print_data=False):
     phi = (5 ** 0.5 + 1) / 2
     fib_n = lambda x: int((phi ** x - (-phi) ** (-x)) / 5 ** 0.5)
 
-    x1 = a + fib_n(iteration_limit - 2) / fib_n(iteration_limit) * (b - a)
-    x2 = a + fib_n(iteration_limit - 1) / fib_n(iteration_limit) * (b - a)
+    k = 1
 
+    x1 = a + fib_n(iteration_limit-2)/fib_n(iteration_limit)*(b-a)
+    x2 = a + fib_n(iteration_limit-1)/fib_n(iteration_limit)*(b-a)
     f1 = function(x1)
     f2 = function(x2)
-    iteration = iteration_limit
-    while iteration > 1:
-        iteration -= 1
+    iteration = 0
+    while (b-a) >= epsilon:
+        iteration += 1
         if f1 > f2:
             a = x1
             x1 = x2
-            x2 = b - (x1 - a)
             f1 = f2
+            x2 = a + fib_n(iteration_limit-1-iteration)/fib_n(iteration_limit-iteration)*(b-a)
             f2 = function(x2)
         else:
             b = x2
             x2 = x1
-            x1 = a + (b - x2)
             f2 = f1
+            x1 = a + fib_n(iteration_limit-2-iteration)/fib_n(iteration_limit-iteration)*(b-a)
             f1 = function(x1)
 
         if print_data:
-            print(f"Iteration: {iteration_limit - iteration}  Limits [{a} {b}]")
+            print(f"Iteration: {iteration}  Limits [{a} {b}]")
 
-    return iteration_limit, (a + b) / 2
+        if iteration == iteration_limit - 2:
+            x2 = x1 + epsilon/2
+            if function(x1) == function(x2):
+                a = x1
+                b = x2
+            else:
+                b = x2
+            break
+
+    return iteration, (a+b)/2
 
 
 def parabola_method(function, a, b, epsilon, print_data=False):
     f1 = function(a)
     f3 = function(b)
 
-    while True:
-        x = a + random.random() * (b - a)
-        f2 = function(x)
-        if f1 > f2 and f3 > f2:
-            break
+    # while True:
+    #     x = a + random.random() * (b - a)
+    #     f2 = function(x)
+    #     if f1 > f2 and f3 > f2:
+    #         break
+
+    x = a + 0.5 * (b - a)
+    f2 = function(x)
 
     iterations = 0
     if print_data:
