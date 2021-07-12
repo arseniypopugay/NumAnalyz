@@ -48,7 +48,7 @@ def golden_ratio(function, a, b, epsilon, print_data=False):
     return iterations, (a + b) / 2
 
 
-def fibonacci(function, a, b, iteration_limit, epsilon,  print_data=False):
+def fibonacci(function, a, b, iteration_limit, epsilon,  print_data=False, start_iteration = 0):
     phi = (5 ** 0.5 + 1) / 2
     fib_n = lambda x: int((phi ** x - (-phi) ** (-x)) / 5 ** 0.5)
 
@@ -58,7 +58,7 @@ def fibonacci(function, a, b, iteration_limit, epsilon,  print_data=False):
     x2 = a + fib_n(iteration_limit-1)/fib_n(iteration_limit)*(b-a)
     f1 = function(x1)
     f2 = function(x2)
-    iteration = 0
+    iteration = start_iteration
     while (b-a) >= epsilon:
         iteration += 1
         if f1 > f2:
@@ -108,8 +108,9 @@ def parabola_method(function, a, b, epsilon, print_data=False):
 
     while b - a >= epsilon:
         iterations += 1
-        u = x - ((x - a) ** 2 * (f2 - f3) - (x - b) ** 2 * (f2 - f1)) / (
-                2 * ((x - a) * (f2 - f3) - (x - b) * (f2 - f1)))
+        if (2 * ((x - a) * (f2 - f3) - (x - b) * (f2 - f1))) == 0:
+            break
+        u = x - ((x - a) ** 2 * (f2 - f3) - (x - b) ** 2 * (f2 - f1)) / (2 * ((x - a) * (f2 - f3) - (x - b) * (f2 - f1)))
         if u < x:
             b = x
             f3 = f2
@@ -124,6 +125,7 @@ def parabola_method(function, a, b, epsilon, print_data=False):
             x = u
         if print_data:
             print(f"Iteration: {iterations}  Limits [{a} {x} {b}]")
+            # print(f"{a} {b}")
 
     return iterations, (a + b) / 2
 
@@ -145,6 +147,8 @@ def brent_method(function, a, b, epsilon, print_data=False):
         parabolized = False
         if x != v and x != w and v != w and f_x != f_v and f_x != f_w and f_v != f_w:
             u = x - ((x - v) ** 2 * (f_x - f_w) - (x - w) ** 2 * (f_x - f_v)) / (2 * ((x - v) * (f_x - f_w) - (x - w) * (f_x - f_v)))
+
+
 
             if a+epsilon <= u <= b-epsilon and abs(u-x) < g/2:
                 parabolized = True
@@ -192,3 +196,73 @@ def brent_method(function, a, b, epsilon, print_data=False):
                 f_v = f_u
 
     return iterations, (a + b) / 2
+
+
+def combined_fibonachi(function, a, b, epsilon, gold_part, print_data = False):
+    ratio = (3 - 5 ** 0.5) / 2
+    iterations = 0
+
+    x1 = a + ratio * (b - a)
+    x2 = b - ratio * (b - a)
+
+    f1 = function(x1)
+    f2 = function(x2)
+
+    limit = (b - a)*gold_part
+
+    while b - a >= limit and b-a >= epsilon:
+        iterations += 1
+        if f1 < f2:
+            b = x2
+            x2 = x1
+            f2 = f1
+            x1 = a + ratio * (b - a)
+            f1 = function(x1)
+        else:
+            a = x1
+            x1 = x2
+            f1 = f2
+            x2 = b - ratio * (b - a)
+            f2 = function(x2)
+        if print_data:
+            print(f"Iteration: {iterations}  Limits [{a} {b}]")
+
+    iteration_limit = 0
+    phi = (5 ** 0.5 + 1) / 2
+    fib_n = lambda x: int((phi ** x - (-phi) ** (-x)) / 5 ** 0.5)
+    for i in range(0, 100000):
+        if fib_n(i) > (b - a) / epsilon:
+            iteration_limit = i + 1
+            break
+
+    return fibonacci(function, a, b, iteration_limit, epsilon, print_data, iterations)
+
+
+def use_method(func, a, b, eps, method: str):
+    if method == "DICHOTOMY":
+        _, val = dichotomy(func, a, b, eps)
+        print(f"{_=}")
+        return val
+    if method == "GOLDEN":
+        _, val = golden_ratio(func, a, b, eps)
+        print(f"{_=}")
+        return val
+    if method == "FIBONACCI":
+        phi = (5 ** 0.5 + 1) / 2
+        fib_n = lambda x: int((phi ** x - (-phi) ** (-x)) / 5 ** 0.5)
+        for i in range(0, 100000):
+            if fib_n(i) > (b-a)/eps:
+                iteration_limit = i+1
+                break
+
+        _, val = fibonacci(func, a, b, iteration_limit, eps)
+        print(f"{_=}")
+        return val
+    if method == "BRENT":
+        _, val = brent_method(func, a, b, eps)
+        print(f"{_=}")
+        return val
+    if method == "PARABOLA":
+        print(f"{_=}")
+        _, val = parabola_method(func, a, b, eps)
+        return val
